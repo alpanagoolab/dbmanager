@@ -13,3 +13,17 @@ You would need to set up the following:
 - Have access to Alexa Developer Account: https://developer.amazon.com/alexa
 - Create IAM roles to access RDS from Lambda to create a secure role: https://docs.aws.amazon.com/lambda/latest/dg/access-control-identity-based.html
 - Configure Endpoint and Alexa Skill Trigger: https://developer.amazon.com/docs/custom-skills/host-a-custom-skill-as-an-aws-lambda-function.html#add-ask-trigger
+
+
+# Interaction Model
+
+The interaction model is a way in which the user is supposed to interact with your skill.
+
+Invocation Name. This is the name that the users use to invoke your skill. 
+"my database manager"
+
+Intents. This is the specific action to be invoked.
+
+Utterances. A list of various things that a user can possibly say/utter to invoke an action/intent.
+"list my instances"
+"list my clusters"
