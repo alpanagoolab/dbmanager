@@ -12,16 +12,6 @@
                     "samples": []
                 },
                 {
-                    "name": "addReplicaIntent",
-                    "slots": [],
-                    "samples": [
-                        "create a replica",
-                        "create replica",
-                        "add replica",
-                        "add a replica"
-                    ]
-                },
-                {
                     "name": "stopIntent",
                     "slots": [],
                     "samples": [
@@ -54,11 +44,65 @@
                         "list my instances",
                         "list all my instances"
                     ]
+                },
+                {
+                    "name": "addReplicaToIntent",
+                    "slots": [
+                        {
+                            "name": "Master",
+                            "type": "LIST_OF_MASTERS"
+                        }
+                    ],
+                    "samples": [
+                        "add replica to {Master}"
+                    ]
+                },
+                {
+                    "name": "failoverCluster",
+                    "slots": [
+                        {
+                            "name": "Failover",
+                            "type": "LIST_OF_FAILOVER"
+                        }
+                    ],
+                    "samples": [
+                        "fail over {Failover}"
+                    ]
                 }
             ],
             "types": [
                 {
                     "name": "LIST_OF_CLUSTERS",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "cluster2"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "cluster1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "LIST_OF_MASTERS",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "cluster2"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "cluster1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "LIST_OF_FAILOVER",
                     "values": [
                         {
                             "name": {
