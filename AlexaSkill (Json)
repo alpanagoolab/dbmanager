@@ -1,0 +1,78 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "my database manager",
+            "intents": [
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "addReplicaIntent",
+                    "slots": [],
+                    "samples": [
+                        "create a replica",
+                        "create replica",
+                        "add replica",
+                        "add a replica"
+                    ]
+                },
+                {
+                    "name": "stopIntent",
+                    "slots": [],
+                    "samples": [
+                        "end",
+                        "stop",
+                        "stop session ",
+                        "end session"
+                    ]
+                },
+                {
+                    "name": "clusterStatusIntent",
+                    "slots": [
+                        {
+                            "name": "Cluster",
+                            "type": "LIST_OF_CLUSTERS"
+                        }
+                    ],
+                    "samples": [
+                        "what is the status of {Cluster}"
+                    ]
+                },
+                {
+                    "name": "listIntent",
+                    "slots": [],
+                    "samples": [
+                        "list all databases",
+                        "list databases ",
+                        "list",
+                        "list all ",
+                        "list my instances",
+                        "list all my instances"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "LIST_OF_CLUSTERS",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "cluster2"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "cluster1"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
