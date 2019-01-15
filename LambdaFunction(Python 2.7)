@@ -5,8 +5,7 @@ import boto3
 import json
 import datetime
 from botocore.exceptions import ClientError
-dbinstance='replica22'
-clusteridentifier='aurora1'
+client = boto3.client('rds')
 
 # --------------- Helpers that build all of the responses ----------------------
 
@@ -68,7 +67,7 @@ def handle_session_end_request():
 
 def create_my_cluster_attributes(my_cluster):
     return {"myCluster": my_cluster}
-
+    
 def set_cluster_in_session(intent, session):
     card_title = intent['name']
     session_attributes = {}
@@ -77,11 +76,19 @@ def set_cluster_in_session(intent, session):
     if 'Cluster' in intent['slots']:
         my_cluster = intent['slots']['Cluster']['value']
         session_attributes = create_my_cluster_attributes(my_cluster)
-        speech_output = "The status of your cluster, " +\
+        
+        dbs = client.describe_db_instances()
+        for db in dbs['DBInstances']:
+            if (db['DBInstanceIdentifier'] == my_cluster):
+                dbstatus = db['DBInstanceStatus']
+
+        speech_output = "The status of your database, " +\
                         my_cluster + \
-                        ", is fine."
-        reprompt_text = "The status of your cluster, " +\
-                        my_cluster + \
+                        ", is " +\
+                        dbstatus + \
+                        "."
+        reprompt_text = "The status of your database, " +\
+                        dbstatus + \
                         ", is fine."
     else:
         speech_output = "I'm not sure what your cluster is. " \
@@ -90,19 +97,18 @@ def set_cluster_in_session(intent, session):
                         "Please try again."
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
-  
+        
 def list_all_instances():
     session_attributes = {}
     card_title = "List"
     DBInstanceIdentifierAll=""
-    client = boto3.client('rds')
     dbs = client.describe_db_instances()
     for db in dbs['DBInstances']:
         DBInstanceIdentifier=db['DBInstanceIdentifier']
         DBInstanceIdentifierAll=DBInstanceIdentifierAll +\
                                 ", " +\
                                 DBInstanceIdentifier
-
+    
     speech_output = "Here is the list of all your instances" +\
                     DBInstanceIdentifierAll +\
                     "."
@@ -111,28 +117,51 @@ def list_all_instances():
                     "."
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
-        card_title, speech_output, reprompt_text, should_end_session))  
+        card_title, speech_output, reprompt_text, should_end_session))   
 
-def add_replica(intent, session):
+def add_replica_to(intent, session):
+    card_title = intent['name']
     session_attributes = {}
-    client = boto3.client('rds')
-    try:
+    should_end_session = False
+
+    if 'Master' in intent['slots']:
+        my_cluster = intent['slots']['Master']['value']
+        session_attributes = create_my_cluster_attributes(my_cluster)
+        dbs = client.describe_db_instances()
+        dbcount = str(len(dbs['DBInstances']) + 1)
+        dbinstance = "newreplica" + dbcount
         response = client.create_db_instance(
         DBInstanceIdentifier=dbinstance,
-        DBClusterIdentifier=clusteridentifier,
+        DBClusterIdentifier=my_cluster,
         DBInstanceClass='db.r4.xlarge',
         Engine='aurora-mysql'
         )
+        speech_output = "Your Read Replica is creating."
+        reprompt_text = "Your Read Replica is creating."
+    else:
+        speech_output = "I'm not sure what your cluster is. " \
+                        "Please try again."
+        reprompt_text = "I'm not sure what your cluster is. " \
+                        "Please try again."
+    return build_response(session_attributes, build_speechlet_response(
+        card_title, speech_output, reprompt_text, should_end_session))
+     
+def failover_cluster(intent, session):
+    card_title = intent['name']
+    session_attributes = {}
+    should_end_session = False
 
-    except ClientError as e:
-        print(e)    
-  
-    card_title = "Add Replica"
-    speech_output = "You Aurora Read Replica is creating."
-    # If the user either does not reply to the welcome message or says something
-    # that is not understood, they will be prompted again with this text.
-    reprompt_text = "Welcome to your Database Manager. How can I assist?"
-    should_end_session = True
+    if 'Failover' in intent['slots']:
+        my_cluster = intent['slots']['Failover']['value']
+        session_attributes = create_my_cluster_attributes(my_cluster)
+        response = client.failover_db_cluster(DBClusterIdentifier=my_cluster)
+        speech_output = "Failing over to new master instance. "
+        reprompt_text = "Failing over to new master instance."
+    else:
+        speech_output = "I'm not sure what your cluster is. " \
+                        "Please try again."
+        reprompt_text = "I'm not sure what your cluster is. " \
+                        "Please try again."
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
 
@@ -168,8 +197,10 @@ def on_intent(intent_request, session):
         return set_cluster_in_session(intent, session)
     elif intent_name == "listIntent":
         return list_all_instances()
-    elif intent_name == "addReplicaIntent":
-        return add_replica(intent, session)
+    elif intent_name == "addReplicaToIntent":
+        return add_replica_to(intent, session)
+    elif intent_name == "failoverCluster":
+        return failover_cluster(intent, session)
     elif intent_name == "AMAZON.HelpIntent":
         return get_welcome_response()
     elif intent_name == "stopIntent":
